@@ -5,6 +5,7 @@ interface TaskState {
   tasks: Record<string, Task>;
   columns: Column[];
   addTask: (task: Task) => void;
+  updateTask: (taskId: string, updates: Partial<Omit<Task, 'id'>>) => void;
   moveTask: (taskId: string, fromColumnId: string, toColumnId: string) => void;
   moveTaskLeft: (taskId: string) => void;
   moveTaskRight: (taskId: string) => void;
@@ -59,6 +60,34 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           : col
       ),
     })),
+
+  updateTask: (taskId, updates) =>
+    set((state) => {
+      const oldTask = state.tasks[taskId];
+      if (!oldTask) return state;
+
+      const newTask = { ...oldTask, ...updates };
+
+      // Если изменилась колонка — обновляем taskIds в колонках
+      if (updates.columnId && updates.columnId !== oldTask.columnId) {
+        return {
+          tasks: { ...state.tasks, [taskId]: newTask },
+          columns: state.columns.map((col) => {
+            if (col.id === oldTask.columnId) {
+              return { ...col, taskIds: col.taskIds.filter((id) => id !== taskId) };
+            }
+            if (col.id === updates.columnId) {
+              return { ...col, taskIds: [...col.taskIds, taskId] };
+            }
+            return col;
+          }),
+        };
+      }
+
+      return {
+        tasks: { ...state.tasks, [taskId]: newTask },
+      };
+    }),
 
   moveTask: (taskId, fromColumnId, toColumnId) =>
     set((state) => ({

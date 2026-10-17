@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { FiPlus } from 'react-icons/fi';
+import styles from './Board.module.css';
 import { useTaskStore } from '../store/useTaskStore';
 import Column from './Column';
 
@@ -25,15 +27,7 @@ const Board = () => {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '16px',
-        padding: '20px',
-        overflowX: 'auto',
-        alignItems: 'flex-start',
-      }}
-    >
+    <div className={styles.board}>
       {columns.map((column) => {
         const columnTasks = column.taskIds
           .map((id) => tasks[id])
@@ -48,17 +42,11 @@ const Board = () => {
         );
       })}
 
-      {/* Кнопка / форма добавления колонки */}
-      <div
-        style={{
-          minWidth: '250px',
-          flex: 1,
-        }}
-      >
+      <div style={{ minWidth: '300px' }}>
         {isAdding ? (
           <div
             style={{
-              background: '#f0f2f5',
+              background: '#f4f5f7',
               borderRadius: '8px',
               padding: '12px',
             }}
@@ -86,7 +74,7 @@ const Board = () => {
                 onClick={handleAdd}
                 style={{
                   padding: '6px 12px',
-                  background: '#5b8def',
+                  background: '#4a90e2',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
@@ -119,26 +107,11 @@ const Board = () => {
         ) : (
           <button
             type="button"
+            className={styles.addColumnButton}
             onClick={() => setIsAdding(true)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: '#f0f2f5',
-              border: '2px dashed #ccc',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '15px',
-              color: '#666',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = '#e4e6e9')
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = '#f0f2f5')
-            }
           >
-            + Добавить колонку
+            <FiPlus size={16} />
+            Добавить колонку
           </button>
         )}
       </div>

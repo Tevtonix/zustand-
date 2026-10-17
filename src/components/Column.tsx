@@ -1,6 +1,9 @@
-import type { Column as ColumnType, Task } from '../types';
+import { useState } from 'react';
+import { FiTrash2 } from 'react-icons/fi';
+import styles from './Column.module.css';
 import TaskCard from './TaskCard';
 import { useTaskStore } from '../store/useTaskStore';
+import type { Column as ColumnType, Task } from '../types';
 
 interface ColumnProps {
   column: ColumnType;
@@ -10,13 +13,24 @@ interface ColumnProps {
 const Column = ({ column, tasks }: ColumnProps) => {
   const { moveTask, removeColumn } = useTaskStore();
   const isEmpty = tasks.length === 0;
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Проверяем, что курсор действительно покинул колонку,
+    // а не перешёл на дочерний элемент
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOver(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragOver(false);
     const taskId = e.dataTransfer.getData('taskId');
     const fromColumnId = e.dataTransfer.getData('fromColumnId');
     if (taskId && fromColumnId !== column.id) {
@@ -26,55 +40,33 @@ const Column = ({ column, tasks }: ColumnProps) => {
 
   return (
     <div
-      style={{
-        background: '#f0f2f5',
-        borderRadius: '8px',
-        padding: '12px',
-        minWidth: '250px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+      className={`${styles.column} ${isDragOver ? styles.dragOver : ''}`}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '12px',
-        }}
-      >
-        <h3 style={{ margin: 0, textAlign: 'center', color: '#333', flex: 1 }}>
-          {column.title}
-        </h3>
-        <button
-          type="button"
-          title={isEmpty ? 'Удалить колонку' : 'Колонка содержит задачи'}
-          disabled={!isEmpty}
-          onClick={() => removeColumn(column.id)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: isEmpty ? 'pointer' : 'not-allowed',
-            opacity: isEmpty ? 1 : 0.3,
-            fontSize: '18px',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            color: '#c0392b',
-            transition: 'opacity 0.2s',
-          }}
-        >
-          
-        </button>
+      <div className={styles.columnHeader}>
+        <h3 className={styles.columnTitle}>{column.title}</h3>
+        <div className={styles.columnActions}>
+          <button
+            type="button"
+            className={styles.actionButton}
+            title={isEmpty ? 'Удалить колонку' : 'Колонка содержит задачи'}
+            disabled={!isEmpty}
+            onClick={() => removeColumn(column.id)}
+          >
+            <FiTrash2 size={16} />
+          </button>
+        </div>
       </div>
 
-      <div style={{ flex: 1 }}>
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
-      </div>
+      {isEmpty ? (
+        <div className={styles.empty}>
+          <p className={styles.emptyHint}>Нет задач</p>
+        </div>
+      ) : (
+        tasks.map((task) => <TaskCard key={task.id} task={task} />)
+      )}
     </div>
   );
 };

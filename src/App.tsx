@@ -23,9 +23,7 @@ function App() {
             background: '#fff',
             cursor: 'pointer',
           }}
-          onClick={() => {
-            // В будущем откроет форму добавления задачи
-          }}
+          onClick={() => {}}
         >
           + Добавить задачу
         </button>
